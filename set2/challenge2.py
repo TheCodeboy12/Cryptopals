@@ -32,4 +32,5 @@ def CBC_encrypt(message:bytes, key:bytes):
     return b''.join(chunks) 
 
 encrypted_message=CBC_encrypt(message,key)
-print(f'The CBC encrypted message:'{encrypted_message}')
+print (f'The message is:\n {message}\n')
+print(f'The CBC encrypted message:\n{encrypted_message}')
