@@ -14,12 +14,24 @@ Detect the block cipher mode the function is using each time. You should end up 
 '''
 
 from Crypto.Cipher import AES  #relies on https://pycryptodome.readthedocs.io/en/latest/src/cipher/cipher.html
+from challenge2 import CBC_encrypt
 import random
 
 #Write a function to generate a random AES key; that's just 16 random bytes.
-def generate_random_key(keylen=16):
+def generate_random_bytes(keylen=16):
    return  bytes([random.randint(0,255) for n in range(keylen)])
 
-def encrypt(key:bytes,message:bytes):
+def encryptECB(key:bytes,message:bytes):
     cipher=AES.new(key,AES.MODE_ECB)
-    cipher.encrypt(message)
+    return cipher.encrypt(message)
+
+def oracle(message:bytes):
+    #appending 5-10 bytes to the beginning and end
+    message=generate_random_bytes(random.randint(5,10))+message+generate_random_bytes(random.randint(5, 10))
+
+    return message
+
+
+print(oracle(b'lol I love choco'))
+
+
