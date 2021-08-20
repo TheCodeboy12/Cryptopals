@@ -13,6 +13,7 @@ Now, have the function choose to encrypt under ECB 1/2 the time, and under CBC t
 Detect the block cipher mode the function is using each time. You should end up with a piece of code that, pointed at a block box that might be encrypting ECB or CBC, tells you which one is happening. 
 '''
 
+from Crypto import Cipher
 from Crypto.Cipher import AES  #relies on https://pycryptodome.readthedocs.io/en/latest/src/cipher/cipher.html
 from challenge2 import CBC_encrypt
 import random
@@ -38,29 +39,44 @@ def oracle(message:bytes):
     #appending 5-10 bytes to the beginning and end
     message=generate_random_bytes(random.randint(5,10))+message+generate_random_bytes(random.randint(5, 10))
 
-    return message
+    key=generate_random_bytes(16)
+    chooser=random.randint(0,1)
+    encrypted=b''
+    if chooser==0:
+        encrypted= encryptECB(key,message)
+
+    elif chooser==1:
+        encrypted= CBC_encrypt(key,message)
+
+    if detectECB(message,17)>2:
+        print('This is ECB')
+    
+    else:
+        print('This is CBC')
+    
+    return chooser
 
 
-print(oracle(b'lol I love choco'))
+print(oracle(b'lol I love '))
 
 
-"""
-My idea: 
-since we pad the plain text with some random bytes.
-IF I encrypt with ECB I will always find that plain text as opposed to encrypting with CBC.
-With CBC we also have the initialazation vector 
+# '''
+# My idea: 
+# since we pad the plain text with some random bytes.
+# IF I encrypt with ECB I will always find that plain text as opposed to encrypting with CBC.
+# With CBC we also have the initialazation vector 
 
-Anyways, in ECB bytes will always repeat in messages that are encrypted that are biggger then the keysize
-encryptECB(key,b'A'*32)
+# Anyways, in ECB bytes will always repeat in messages that are encrypted that are biggger then the keysize
+# encryptECB(key,b'A'*32)
 
-For exmple: encryptECB(key,b'A'*32) =>
-b'\xac\xba\x1d`\x12\xd6bR\xe3dKg\xd80*\xe0\xac\xba\x1d`\x12\xd6bR\xe3dKg\xd80*\xe0'
-And I can see that if we break it into chunks the size of the keysize (16) we get two equal chunks
+# For exmple: encryptECB(key,b'A'*32) =>
+# b'\xac\xba\x1d`\x12\xd6bR\xe3dKg\xd80*\xe0\xac\xba\x1d`\x12\xd6bR\xe3dKg\xd80*\xe0'
+# And I can see that if we break it into chunks the size of the keysize (16) we get two equal chunks
 
 
-CBC is different
-CBC_encrypt(b'A'*32,key) = >
-b'\xac\xba\x1d`\x12\xd6bR\xe3dKg\xd80*\xe0s\x19\xf2\xd8\xa4xX\xae*7\xd5qx[\x89\xc7'
+# CBC is different
+# CBC_encrypt(b'A'*32,key) = >
+# b'\xac\xba\x1d`\x12\xd6bR\xKg\e3dxd80*\xe0s\x19\xf2\xd8\xa4xX\xae*7\xd5qx[\x89\xc7'
 
-Which because of the nature of that method does not produce duplicates almost at all.
-"""
+# Which because of the nature of that method does not produce duplicates almost at all.
+# '''
