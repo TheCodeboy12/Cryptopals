@@ -13,16 +13,14 @@ import base64
 import hashlib
 import pdb
 from challenge1 import PKCS
-message=b'hello world yeah I love eating pizza, freies and other things with my buds'
 
 #chunks=[message[i:i+bytesize] for i in range(0,len(message),bytesize)]
 key=b'GABE THE KING!!!'
 #key=AES.new(key,AES.MODE_ECB)
-def CBC_encrypt(key:bytes,message:bytes):
+def CBC_encrypt(message:bytes,key:bytes,):
     cipher=AES.new(key,AES.MODE_ECB)
     bytesize=16
     message=PKCS(message, bytesize)
-    pdb.set_trace()
     #Breaking into chunks of bytesize
     chunks=[message[i:i+bytesize] for i in range(0,len(message),bytesize)]
     for chunk in chunks:
@@ -33,6 +31,7 @@ def CBC_encrypt(key:bytes,message:bytes):
     return b''.join(chunks) 
 
 def main():
+    message=b'hello world yeah I love eating pizza, freies and other things with my buds'
     encrypted_message=CBC_encrypt(message,key)
     print (f'The message is:\n {message}\n')
     print(f'The CBC encrypted message:\n{encrypted_message}')
