@@ -1,12 +1,12 @@
 #Implement PKCS#7 padding
-def PKCS(thebyte:bytes,blocksize:int):
-    assert blocksize>len(thebyte), 'blocksize is smaller or equal to the the len of bytes'
-    pad=blocksize-len(thebyte)
-    return thebyte+bytes([pad]*pad)
+def PKCS(message:bytes,blocksize:int):
+    assert blocksize>2 or blocksize>255, 'Block size must be between 2 and 255 bytes'
+    pad=blocksize-(len(message)%blocksize)
+    return message+bytes([pad]*pad)
 
 def main():
     key=b'YELLOW SUBMARINE'
-    print(PKCS(key,155))
+    print(PKCS(key,16))
 
 if __name__ == '__main__':
     main()

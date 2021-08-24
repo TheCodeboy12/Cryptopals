@@ -17,6 +17,7 @@ from Crypto import Cipher
 from Crypto.Cipher import AES  #relies on https://pycryptodome.readthedocs.io/en/latest/src/cipher/cipher.html
 from challenge2 import CBC_encrypt
 import random
+from challenge1 import PKCS
 
 def detectECB(message:bytes,biggest):
     data={}
@@ -36,16 +37,19 @@ def encryptECB(key:bytes,message:bytes):
     return cipher.encrypt(message)
 
 def oracle(message:bytes):
+
     #appending 5-10 bytes to the beginning and end
-    message=generate_random_bytes(random.randint(5,10))+message+generate_random_bytes(random.randint(5, 10))
+    message=PKCS(generate_random_bytes(random.randint(5,10))+message+generate_random_bytes(random.randint(5, 10)),16)
 
     key=generate_random_bytes(16)
     chooser=random.randint(0,1)
     encrypted=b''
-    if chooser==0:
+    if chooser==0: 
+        #we encrypt with ECB
         encrypted= encryptECB(key,message)
 
     elif chooser==1:
+        #We use CBC
         encrypted= CBC_encrypt(key,message)
 
     if detectECB(message,17)>2:
@@ -57,7 +61,7 @@ def oracle(message:bytes):
     return chooser
 
 
-print(oracle(b'lol I love '))
+print(oracle(b'lol I lovghjghjfgjhjge '))
 
 
 # '''

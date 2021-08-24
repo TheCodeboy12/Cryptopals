@@ -14,21 +14,22 @@ import hashlib
 import pdb
 from challenge1 import PKCS
 message=b'hello world yeah I love eating pizza, freies and other things with my buds'
-message=PKCS(message,80)
 
 #chunks=[message[i:i+bytesize] for i in range(0,len(message),bytesize)]
 key=b'GABE THE KING!!!'
 #key=AES.new(key,AES.MODE_ECB)
-def CBC_encrypt(key:bytes,message:bytes ):
-    key=AES.new(key,AES.MODE_ECB)
+def CBC_encrypt(key:bytes,message:bytes):
+    cipher=AES.new(key,AES.MODE_ECB)
     bytesize=16
+    message=PKCS(message, bytesize)
+    pdb.set_trace()
     #Breaking into chunks of bytesize
     chunks=[message[i:i+bytesize] for i in range(0,len(message),bytesize)]
     for chunk in chunks:
         if chunks.index(chunk)==0:
-            chunks[0]=key.encrypt(chunk) #initialization vector
+            chunks[0]=cipher.encrypt(chunk) #initialization vector
         else:
-            chunks[chunks.index(chunk)]=key.encrypt(bytes([x^y for x,y in zip(chunk,chunks[chunks.index(chunk)-1])]))
+            chunks[chunks.index(chunk)]=cipher.encrypt(bytes([x^y for x,y in zip(chunk,chunks[chunks.index(chunk)-1])]))
     return b''.join(chunks) 
 
 def main():
