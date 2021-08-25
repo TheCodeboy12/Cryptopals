@@ -17,7 +17,7 @@ from challenge1 import PKCS
 #chunks=[message[i:i+bytesize] for i in range(0,len(message),bytesize)]
 key=b'GABE THE KING!!!'
 #key=AES.new(key,AES.MODE_ECB)
-def CBC_encrypt(message:bytes,key:bytes,):
+def CBC_encrypt(message:bytes,key:bytes):
     cipher=AES.new(key,AES.MODE_ECB)
     bytesize=16
     message=PKCS(message, bytesize)

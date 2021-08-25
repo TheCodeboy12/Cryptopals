@@ -18,21 +18,38 @@ from Crypto.Cipher import AES  #relies on https://pycryptodome.readthedocs.io/en
 from challenge2 import CBC_encrypt
 import random
 from challenge1 import PKCS
+import pdb
 
-def detectECB(message:bytes,biggest):
-    data={}
-    # data looks like this : {bytesize:chunks of the b64 decoded text}
-    for bytesize in range(2,biggest):
-        chunks=[message[i:i+bytesize] for i in range(0,len(message),bytesize)]
-        reps= len(chunks)-len(set(chunks))
-        data.update({bytesize:reps})
-    return max(set(data.values()))
+def xor(message:bytes,message2:bytes):
+    assert len(message)==len(message2),'Not same lengh messages'
+    return bytes([x^y for x,y in zip(message,message2)])
+def detectECB(message:bytes,keysize:int):
+    '''ECB will always produce the same text with the same key as opposed to CBC'''
+    assert len(message)%16==0,'Message is not good with the keysize'
+    chunks=[message[i:i+keysize] for i in range(0,len(message),keysize)]
+    pdb.set_trace()
+    if len(message)>sum([len(set(x)) for x in chunks]):
+        return True
+    else: 
+        return False
+def CBC_encrypt(message:bytes,key:bytes,IV:bytes=random.randbytes(16)):
+    cipher=AES.new(key,AES.MODE_ECB)
+    bytesize=16
+    message=PKCS(message, bytesize)
+    #Breaking into chunks of bytesize
+    chunks=[message[i:i+bytesize] for i in range(0,len(message),bytesize)]
+    for chunk in chunks:
+        if chunks.index(chunk)==0:
+            chunks[0]=cipher.encrypt(xor(chunk,IV)) #encrypting using the Xor of the IV and chunk0
+        else:
+            chunks[chunks.index(chunk)]=cipher.encrypt(bytes([x^y for x,y in zip(chunk,chunks[chunks.index(chunk)-1])]))
+    return b''.join(chunks)
 
 #Write a function to generate a random AES key; that's just 16 random bytes.
 def generate_random_bytes(keylen=16):
    return  bytes([random.randint(0,255) for n in range(keylen)])
 
-def encryptECB(key:bytes,message:bytes):
+def encryptECB(message:bytes,key:bytes):
     cipher=AES.new(key,AES.MODE_ECB)
     return cipher.encrypt(message)
 
@@ -46,22 +63,20 @@ def oracle(message:bytes):
     encrypted=b''
     if chooser==0: 
         #we encrypt with ECB
-        encrypted= encryptECB(key,message)
-
+        encrypted= encryptECB(message,key)
     elif chooser==1:
         #We use CBC
-        encrypted= CBC_encrypt(key,message)
+        encrypted= CBC_encrypt(message,key)
 
-    if detectECB(message,17)>2:
+    if detectECB(message,16)==True:
         print('This is ECB')
-    
     else:
         print('This is CBC')
     
     return chooser
 
 
-print(oracle(b'lol I lovghjghjfgjhjge '))
+print(oracle(b'lol I love '))
 
 
 # '''
