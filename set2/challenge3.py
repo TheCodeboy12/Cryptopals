@@ -23,14 +23,16 @@ import pdb
 def xor(message:bytes,message2:bytes):
     assert len(message)==len(message2),'Not same lengh messages'
     return bytes([x^y for x,y in zip(message,message2)])
-def detectECB(message:bytes,keysize:int):
+
+def detectECB(ciphertext:bytes,keysize:int):
     '''ECB will always produce the same text with the same key as opposed to CBC'''
-    assert len(message)%16==0,'Message is not good with the keysize'
-    chunks=[message[i:i+keysize] for i in range(0,len(message),keysize)]
-    pdb.set_trace()
-    if len(message)>sum([len(set(x)) for x in chunks]):
+    #We will break the ciphertext into keysize chunks and check where we see the most duplicates
+    chunks=[ciphertext[i:i+keysize] for i in range(0,len(ciphertext),keysize)]
+    #assert len(chunks)>2
+    if len(set(chunks))<len(chunks): #This is ECB
         return True
-    else: 
+    
+    else:
         return False
 def CBC_encrypt(message:bytes,key:bytes,IV:bytes=random.randbytes(16)):
     cipher=AES.new(key,AES.MODE_ECB)
@@ -49,34 +51,40 @@ def CBC_encrypt(message:bytes,key:bytes,IV:bytes=random.randbytes(16)):
 def generate_random_bytes(keylen=16):
    return  bytes([random.randint(0,255) for n in range(keylen)])
 
-def encryptECB(message:bytes,key:bytes):
-    cipher=AES.new(key,AES.MODE_ECB)
-    return cipher.encrypt(message)
-
 def oracle(message:bytes):
 
     #appending 5-10 bytes to the beginning and end
-    message=PKCS(generate_random_bytes(random.randint(5,10))+message+generate_random_bytes(random.randint(5, 10)),16)
+    message=random.randbytes(random.randint(5,10))+message+random.randbytes(random.randint(5,10))
+    if len(message)%16 != 0: #Check if it needs padding
+        message=PKCS(message, 16) #Padding the message to 16
 
-    key=generate_random_bytes(16)
-    chooser=random.randint(0,1)
-    encrypted=b''
+    key=random.randbytes(16) #generating a random key
+     #creating cipher
+    chooser=random.randint(0,1) # Choose randomly wheather ECB or CBC
+    encryptedMessage=b''
     if chooser==0: 
         #we encrypt with ECB
-        encrypted= encryptECB(message,key)
+        cipher=AES.new(key, AES.MODE_ECB)
+        encryptedMessage=cipher.encrypt(message)
     elif chooser==1:
         #We use CBC
-        encrypted= CBC_encrypt(message,key)
+        IV=random.randbytes(16)
+        cipher=AES.new(key, AES.MODE_CBC,IV)
+        encryptedMessage= cipher.encrypt(message)
 
-    if detectECB(message,16)==True:
-        print('This is ECB')
+    return encryptedMessage,chooser
+
+def main():
+    message=b'A'*48
+    ciphertext=oracle(message)
+    print(ciphertext[1])
+    if detectECB(ciphertext[0], 16)==True:
+        print('Oracle used ECB encryption and we are actually correct')
     else:
-        print('This is CBC')
-    
-    return chooser
+        print('Oracle used CBC')
 
-
-print(oracle(b'lol I love '))
+if __name__ == "__main__":
+    main()
 
 
 # '''
